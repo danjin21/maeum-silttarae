@@ -25,6 +25,8 @@
   --bad:#ff4040;
   --bad-soft:#ffe1e1;
   --ok:#4fd18b;
+  --hot:#ff566c;
+  --cold:#5b7fe6;
   --on-card:#ffffff;
   --scrim:rgba(8,6,14,.72);
   --display:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
@@ -106,23 +108,27 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .scale .bar{height:4px;border-radius:4px;background:linear-gradient(90deg, var(--line), var(--thread))}
 .scale b{font-family:var(--display);font-weight:400;color:var(--fg);font-size:14px;margin:0 3px;font-variant-numeric:tabular-nums}
 .hint{margin:0;font-size:13px;color:var(--muted);text-align:center}
-.axis{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);letter-spacing:.04em}
-.axis::before,.axis::after{content:"";height:1px;flex:1;background:var(--line)}
-.axis .arrow{color:var(--thread)}
+.rank{display:flex;align-items:baseline;gap:8px;width:100%;max-width:520px;margin:0 auto;padding-left:2px}
+.rank span{font-family:var(--display);font-size:16px;letter-spacing:.02em}
+.rank small{font-size:12px;color:var(--muted)}
+.rank-top span{color:var(--hot)}
+.rank-bottom span{color:var(--cold)}
 
 #grid{
   --rowh:56px;
   display:flex;flex-direction:column;gap:6px;
-  width:100%;max-width:520px;margin:0 auto;
+  width:100%;max-width:520px;margin:0 auto;position:relative;
 }
+/* heat rail behind the row numbers: hot (high) at the top, cold (low) at the bottom */
+#grid::before{content:"";position:absolute;left:20.5px;top:8px;bottom:8px;width:3px;border-radius:3px;background:linear-gradient(var(--hot), var(--cold));opacity:.55}
 .card{
-  position:relative;display:grid;grid-template-columns:40px minmax(0,1fr);align-items:center;gap:8px;
+  position:relative;display:grid;grid-template-columns:44px minmax(0,1fr) 36px;align-items:center;gap:8px;
   touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
 }
 .slot{
-  height:26px;border-radius:999px;
-  background:var(--line);color:var(--fg);font-size:12px;line-height:26px;text-align:center;
-  font-variant-numeric:tabular-nums;
+  position:relative;z-index:1;height:26px;border-radius:999px;
+  background:var(--heat, var(--line));color:var(--on-card);font-size:12px;line-height:26px;text-align:center;
+  font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.35);
 }
 .stage{position:relative;perspective:900px;min-width:0}
 .flip{
@@ -147,12 +153,19 @@ h1,h2,h3{text-wrap:balance;margin:0}
   color:var(--on-card);
 }
 .bname{
-  flex:1;min-width:0;
+  flex:0 1 auto;min-width:0;max-width:50%;
   font-family:var(--display);font-size:clamp(16px, calc(var(--rowh) * .38), 26px);line-height:1.1;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   text-shadow:0 1px 3px rgba(0,0,0,.45);
 }
-.bhint{flex:0 0 auto;margin-right:46px;font-size:11px;opacity:.85;letter-spacing:.06em;text-shadow:0 1px 2px rgba(0,0,0,.4);transition:opacity .2s}
+.ans{
+  flex:1 1 auto;min-width:0;margin-right:44px;padding:2px 8px;border-radius:8px;background:rgba(0,0,0,.2);
+  font-size:clamp(12px, calc(var(--rowh) * .3), 16px);line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ans:empty{display:none}
+.card.has-ans .bhint{display:none}
+.bhint{flex:0 0 auto;margin-left:auto;margin-right:46px;font-size:11px;opacity:.85;letter-spacing:.06em;text-shadow:0 1px 2px rgba(0,0,0,.4);transition:opacity .2s}
 .timer{
   position:absolute;right:8px;top:50%;transform:translateY(-50%);
   width:calc(var(--rowh) - 10px);height:calc(var(--rowh) - 10px);max-width:48px;max-height:48px;
@@ -171,7 +184,10 @@ h1,h2,h3{text-wrap:balance;margin:0}
   box-shadow:inset 0 0 0 2px var(--c), 0 4px 10px -5px rgba(0,0,0,.6);
 }
 .front::before{content:"";position:absolute;inset:0 auto 0 0;width:9px;background:var(--c)}
-.fname{flex:1;min-width:0;font-size:clamp(13px, calc(var(--rowh) * .3), 18px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}
+.ftext{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.fans{font-size:clamp(11px, calc(var(--rowh) * .26), 15px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.6}
+.fans:empty{display:none}
+.fname{min-width:0;font-size:clamp(13px, calc(var(--rowh) * .3), 18px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}
 .num{font-family:var(--display);font-size:clamp(26px, calc(var(--rowh) * .64), 46px);line-height:1;font-variant-numeric:tabular-nums;min-width:2.2ch;text-align:right}
 .tag{
   position:absolute;left:60%;top:50%;transform:translate(-50%,-50%) scale(0);z-index:2;
@@ -180,6 +196,18 @@ h1,h2,h3{text-wrap:balance;margin:0}
   transition:transform .3s cubic-bezier(.3,1.6,.5,1);
   box-shadow:0 4px 10px -2px rgba(0,0,0,.5);
 }
+.edit{
+  width:36px;height:36px;border-radius:50%;padding:0;border:1px solid var(--line);
+  background:var(--felt);color:var(--fg);font-size:16px;line-height:1;display:grid;place-items:center;
+  touch-action:manipulation;
+}
+.edit.filled{border-color:var(--gold);color:var(--gold)}
+#grid.locked .edit{visibility:hidden}
+.dialog input{
+  width:100%;height:48px;border-radius:12px;border:1px solid var(--line);
+  background:var(--table);color:var(--fg);padding:0 12px;font:inherit;font-size:16px;
+}
+.dialog input::placeholder{color:var(--muted);opacity:.7}
 .card.placeholder .stage{opacity:.22}
 .ghost{position:fixed;z-index:60;pointer-events:none;margin:0;will-change:transform}
 .ghost .flip{box-shadow:0 18px 26px -10px rgba(0,0,0,.75);border-radius:12px}
@@ -297,7 +325,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
   <details class="rules panel">
     <summary>어떻게 하나요?</summary>
     <ol>
-      <li>모두에게 1~100 사이의 숫자가 몰래 배정돼요. 내 카드를 <b>2초 꾹</b> 눌러 확인하고, 다시 누르면 덮여요.</li>
+      <li>모두에게 1~100 사이의 숫자가 몰래 배정돼요. 내 카드를 <b>2초 꾹</b> 눌러 확인하고, 다시 누르면 덮여요. 옆의 ✎ 버튼으로 내 답(예: 카페, 인형 뽑기)도 적을 수 있어요.</li>
       <li>화면 위 질문에 맞춰 내 숫자를 말로 표현해요. 예: "무서운 것"에서 90이면 "한밤중 혼자 폐병원".</li>
       <li>서로의 말을 듣고 카드를 끌어 <b>맨 위 1행부터 큰 수, 아래로 갈수록 작은 수</b>가 되게 줄 세워요.</li>
       <li>다 됐으면 모두 공개! 숫자가 차례대로 이어지면 성공, 순서를 끊은 사람이 범인이에요.</li>
@@ -315,9 +343,10 @@ h1,h2,h3{text-wrap:balance;margin:0}
     <div class="scale"><span><b>1</b><span id="qlo"></span></span><span class="bar"></span><span><span id="qhi"></span><b>100</b></span></div>
   </header>
 
-  <p class="hint" id="hint">2초 꾹 → 확인 · 탭 → 덮기 · 위아래로 끌어 자리 이동</p>
-  <div class="axis"><span>1행 큰 수</span><span class="arrow">↓</span><span>작은 수</span></div>
+  <p class="hint" id="hint">2초 꾹 → 확인 · 탭 → 덮기 · 끌어서 이동 · ✎ 답 적기</p>
+  <div class="rank rank-top"><span>▲ 높은 수</span><small>1행에 가장 큰 숫자</small></div>
   <div id="grid"></div>
+  <div class="rank rank-bottom"><span>▼ 낮은 수</span><small>아래로 갈수록 작은 숫자</small></div>
 
   <div id="result" hidden>
     <h2 id="rtitle"></h2>
@@ -340,6 +369,17 @@ h1,h2,h3{text-wrap:balance;margin:0}
       <button type="button" class="btn btn-primary" id="mok">확인</button>
     </div>
   </div>
+</div>
+<div class="modal" id="editor" hidden>
+  <form class="dialog" id="editorForm" role="dialog" aria-modal="true" aria-labelledby="etitle">
+    <h3 id="etitle"></h3>
+    <p id="eq"></p>
+    <input id="ansInput" type="text" maxlength="20" autocomplete="off" enterkeyhint="done" placeholder="예: 카페, 인형 뽑기">
+    <div class="row">
+      <button type="button" class="btn btn-ghost" id="ecancel">취소</button>
+      <button type="submit" class="btn btn-primary">저장</button>
+    </div>
+  </form>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -370,7 +410,7 @@ function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.rand
 function vibrate(p){ try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} }
 
 let count = 4, names = [], colors = shuffle(COLORS.slice());
-let players = [], order = [], nums = {}, phase = 'play', roundNo = 0;
+let players = [], order = [], nums = {}, answers = {}, phase = 'play', roundNo = 0;
 let qDeck = [], qCur = null;
 
 try{
@@ -425,6 +465,7 @@ function newRound(){
   roundNo++;
   const pool = shuffle(Array.from({length:100}, (_,i)=>i+1)).slice(0, players.length);
   nums = {};
+  answers = {};
   players.forEach((p,i) => nums[p.id] = pool[i]);
   order = shuffle(players.map(p => p.id));
   phase = 'play';
@@ -458,7 +499,8 @@ function fitRows(){
   if(!n || $('#game').hidden) return;
   const top = grid.getBoundingClientRect().top + scrollY;
   const bar = $('#actions').getBoundingClientRect().height || 84;
-  const avail = innerHeight - top - bar - 6;
+  const below = $('.rank-bottom').offsetHeight + 14;
+  const avail = innerHeight - top - bar - below - 6;
   const h = Math.floor((avail - gap * (n - 1)) / n);
   grid.style.setProperty('--rowh', Math.max(40, Math.min(76, h)) + 'px');
 }
@@ -483,6 +525,7 @@ function makeCard(p){
     <div class="stage"><div class="flip">
       <div class="face back">
         <span class="bname">${esc(p.name)}</span>
+        <span class="ans"></span>
         <span class="bhint">꾹 2초</span>
         <span class="timer">
           <svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle class="track" cx="22" cy="22" r="19"/><circle class="prog" cx="22" cy="22" r="19"/></svg>
@@ -490,17 +533,23 @@ function makeCard(p){
         </span>
       </div>
       <div class="face front">
-        <span class="fname">${esc(p.name)}</span>
+        <span class="ftext"><span class="fname">${esc(p.name)}</span><span class="fans"></span></span>
         <span class="num"></span>
       </div>
     </div>
-    <span class="tag">범인</span></div>`;
+    <span class="tag">범인</span></div>
+    <button type="button" class="edit" aria-label="${esc(p.name)}의 답 적기">✎</button>`;
   return el;
 }
 
 function cards(){ return [...grid.children]; }
 function updateSlots(){
-  cards().forEach((c,i) => c.querySelector('.slot').textContent = `${i+1}행`);
+  const all = cards(), n = all.length;
+  all.forEach((c,i) => {
+    const s = c.querySelector('.slot'), t = n > 1 ? i / (n - 1) : 0;
+    s.textContent = `${i+1}행`;
+    s.style.setProperty('--heat', `hsl(${352 - t * 128} ${86 - t * 30}% ${60 - t * 8}%)`);
+  });
   order = cards().map(c => +c.dataset.id);
 }
 
@@ -528,6 +577,7 @@ grid.addEventListener('contextmenu', e => e.preventDefault());
 grid.addEventListener('pointerdown', e => {
   if(phase !== 'play' || g) return;
   if(e.pointerType === 'mouse' && e.button !== 0) return;
+  if(e.target.closest('.edit')) return;
   const card = e.target.closest('.card');
   if(!card) return;
   e.preventDefault();
@@ -720,6 +770,7 @@ function beadRow(ids, cset, markBreaks){
 
 /* ---------------- actions bar ---------------- */
 function renderActions(){
+  grid.classList.toggle('locked', phase !== 'play');
   const box = $('#actionsInner');
   if(phase === 'done'){
     box.innerHTML = `<button type="button" class="btn btn-ghost" data-act="setup">참가자 변경</button>
@@ -761,7 +812,45 @@ function closeModal(v){ $('#modal').hidden = true; if(modalResolve){ modalResolv
 $('#mok').addEventListener('click', () => closeModal(true));
 $('#mcancel').addEventListener('click', () => closeModal(false));
 $('#modal').addEventListener('click', e => { if(e.target.id === 'modal') closeModal(false); });
-document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('#modal').hidden) closeModal(false); });
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape') return;
+  if(!$('#modal').hidden) closeModal(false);
+  if(!$('#editor').hidden) closeEditor(false);
+});
+
+/* ---------------- written answers ---------------- */
+let editingId = null;
+function openEditor(id){
+  if(phase !== 'play') return;
+  editingId = id;
+  $('#etitle').textContent = `${players[id].name}의 답`;
+  $('#eq').textContent = `질문: ${QUESTIONS[qCur][0]}. 내 숫자에 어울리는 답을 적어요.`;
+  $('#ansInput').value = answers[id] || '';
+  $('#editor').hidden = false;
+  $('#ansInput').focus();
+}
+function closeEditor(save){
+  if(save && editingId !== null){ answers[editingId] = $('#ansInput').value.trim(); paintAnswer(editingId); }
+  $('#ansInput').blur();
+  $('#editor').hidden = true;
+  editingId = null;
+}
+function paintAnswer(id){
+  const card = grid.querySelector(`.card[data-id="${id}"]`);
+  if(!card) return;
+  const a = answers[id] || '';
+  card.querySelector('.ans').textContent = a;
+  card.querySelector('.fans').textContent = a;
+  card.classList.toggle('has-ans', !!a);
+  card.querySelector('.edit').classList.toggle('filled', !!a);
+}
+grid.addEventListener('click', e => {
+  const b = e.target.closest('.edit');
+  if(b) openEditor(+b.closest('.card').dataset.id);
+});
+$('#editorForm').addEventListener('submit', e => { e.preventDefault(); closeEditor(true); });
+$('#ecancel').addEventListener('click', () => closeEditor(false));
+$('#editor').addEventListener('click', e => { if(e.target.id === 'editor') closeEditor(false); });
 
 let toastT = 0;
 function toast(msg){
